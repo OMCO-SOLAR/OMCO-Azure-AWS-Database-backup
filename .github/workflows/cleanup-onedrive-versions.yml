@@ -1,0 +1,38 @@
+name: Cleanup OneDrive File Versions
+
+on:
+  schedule:
+    # Runs daily at 09:00 UTC — adjust to taste. Cron is UTC only.
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Log what would be deleted without deleting"
+        type: boolean
+        default: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run cleanup script
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          GRAPH_DRIVE_ID: ${{ secrets.GRAPH_DRIVE_ID }}
+          GRAPH_FOLDER_PATH: ${{ vars.GRAPH_FOLDER_PATH }}
+          KEEP_VERSIONS: "1"
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: python cleanup_onedrive_versions.py
