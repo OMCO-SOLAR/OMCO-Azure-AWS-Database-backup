@@ -43,7 +43,13 @@ jobs:
             echo "Files restored:"
             ls -lh telemetry_*.csv last_pull_timestamp.json 2>/dev/null || echo "None found"
           fi
-
+      - name: Diagnose OneDrive connection
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ONEDRIVE_USER_EMAIL: ${{ secrets.ONEDRIVE_USER_EMAIL }}
+        run: python diagnose_onedrive.py
       - name: Run Cosmos DB pull script
         env:
           COSMOS_ENDPOINT: ${{ secrets.COSMOS_ENDPOINT }}
